@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Start a Petition · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="start">
+<div id="siteHeader"></div>
+<main class="wrap"><div class="wiz">
+  <div class="wiz-prog" id="prog"><i></i><i></i><i></i><i></i><i></i></div>
+  <div id="step"></div>
+  <div class="wiz-nav"><button class="btn outline" id="back">← Back</button><button class="btn" id="next">Continue →</button></div>
+</div></main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script data-page-script>
+(function(){
+const P=CG.params();const KEY='pa_draft';
+let d={};try{d=JSON.parse(CG.ls.get(KEY)||'{}')}catch(e){d={}}
+d=Object.assign({step:0,scope:'',country:CG.user()?.country||CG.country(),adm1:'',adm2:'',target:{title:'',name:''},targetEdited:false,title:'',short:'',category:'',body:'',variant:0,image:null,goal:1000},d);
+if(P.cc){Object.assign(d,{country:P.cc,adm1:P.adm1||'',adm2:P.adm2||'',scope:P.adm2?'local':P.adm1?'state':'country',step:0,targetEdited:false})}
+try{sessionStorage.removeItem('pa_nav')}catch(e){}
+const save=()=>{const c={...d};CG.ls.set(KEY,JSON.stringify(c))};
+const S=CG.$('#step');const esc=CG.esc;
+const SC=[['local','My local area','A street, ward, LGA or district'],['state','My state or region','A whole state, region, county or province'],['country','My whole country','A national law, policy or service'],['africa','All of Africa','A continent-wide change']];
+function g(){return CG.GEO[d.country]}
+function needs(){if(d.scope==='local')return g().l2?2:1;if(d.scope==='state')return 1;if(d.scope==='country')return 0;return -1}
+function autoTarget(){if(d.targetEdited)return;d.target=CG.suggestTarget(d.scope,d.country,d.adm1,d.adm2)}
+const STEPS=[
+ {title:'Where should this change happen?',draw(){S.innerHTML=`<div class="eyebrow">Step 1 of 5</div><h2>Where should this change happen?</h2><p class="lead">This decides who your petition goes to and who sees it first.</p>
+   <div class="scopes" id="sc">${SC.map(([k,t,s])=>`<button type="button" class="scope ${d.scope===k?'on':''}" data-s="${k}"><b>${t}</b><span>${s}</span></button>`).join('')}</div><div id="loc"></div>`;
+   CG.$('#sc').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;d.scope=b.dataset.s;d.targetEdited=false;save();this.draw()};
+   if(d.scope&&d.scope!=='africa'){const pk=CG.locationPicker(CG.$('#loc'),d,{prefix:'w',levels:needs(),onChange:()=>{Object.assign(d,pk.get());d.targetEdited=false;save()}});Object.assign(d,pk.get())}},
+  ok(){if(!d.scope)return'Choose where the change should happen.';const n=needs();if(n>=1&&!d.adm1)return'Choose a '+g().l1.toLowerCase()+'.';if(n===2&&!d.adm2)return'Choose a '+g().l2.toLowerCase()+'.';return''}},
+ {title:'Who can make this change?',draw(){autoTarget();const L=d.scope==='africa'?null:CG.leader(d.adm2||d.adm1||d.country);
+   S.innerHTML=`<div class="eyebrow">Step 2 of 5</div><h2>Who can make this change?</h2><p class="lead">We have suggested the leader in charge of ${esc(d.scope==='africa'?'the African Union':CG.place(d.country,d.scope==='country'?'':d.adm1,d.scope==='local'?d.adm2:''))}. Change it if someone else is responsible.</p>
+   ${L&&L.src?`<p class="smallnote">Source: ${esc(L.src)}</p>`:''}
+   <div class="form-grid"><div class="field"><label for="tT">Position</label><input id="tT" value="${esc(d.target.title)}" maxlength="120" placeholder="e.g. Commissioner for Works, Lagos State"></div><div class="field"><label for="tN">Name (if known)</label><input id="tN" value="${esc(d.target.name)}" maxlength="80" placeholder="Leave blank if you are not sure"></div></div>
+   <div class="eyebrow" style="margin:8px 0">Other leaders for this area</div><div class="chips" id="alt"></div>`;
+   const alts=[];if(d.country&&d.scope!=='africa'){const h=CG.leader(d.country);alts.push({title:h.title+' of '+CG.COUNTRIES[d.country],name:h.name});if(h.gov)alts.push({title:h.gov.title+' of '+CG.COUNTRIES[d.country],name:h.gov.name});
+     if(d.adm1){const a=CG.leader(d.adm1);if(a.title)alts.push({title:(a.office||a.title)+', '+CG.areaName(d.adm1),name:a.name})}if(d.adm2){const a=CG.leader(d.adm2);if(a.title)alts.push({title:a.title,name:a.name})}}
+   alts.push({...CG.AU});
+   CG.$('#alt').innerHTML=alts.map((a,i)=>`<button type="button" class="chip" data-i="${i}" style="cursor:pointer">${esc(a.name?a.name+' · ':'')}${esc(a.title)}</button>`).join('');
+   CG.$('#alt').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;d.target={...alts[+b.dataset.i]};d.targetEdited=true;save();this.draw()};
+   ['tT','tN'].forEach(i=>CG.$('#'+i).oninput=()=>{d.target={title:CG.$('#tT').value,name:CG.$('#tN').value};d.targetEdited=true;save()})},
+  ok(){return d.target.title.trim().length<3?'Say who can make this change.':''}},
+ {title:'What do you want to change?',draw(){S.innerHTML=`<div class="eyebrow">Step 3 of 5</div><h2>What do you want to change?</h2><p class="lead">Write a short title and a few lines. Our writer will turn it into a full petition you can edit.</p>
+   <div class="field"><label for="pt">Petition title</label><input id="pt" maxlength="100" value="${esc(d.title)}" placeholder="e.g. Fix the street lights on Allen Avenue"><div class="counter" id="ptc"></div><div id="tips" class="smallnote"></div></div>
+   <div class="field"><label for="ps">Tell us in a few sentences</label><textarea id="ps" maxlength="400" placeholder="What is the problem, who does it affect, and how long has it been going on?">${esc(d.short)}</textarea></div>
+   <div class="field"><label>Topic</label><div class="chips" id="cats">${CG.CATS.map(c=>`<button type="button" class="chip ${d.category===c?'dark':''}" data-c="${esc(c)}" style="cursor:pointer">${esc(c)}</button>`).join('')}</div></div>
+   <div class="aibox"><p><b>Petition writer</b><br>Expands your short text into a clear petition with a specific ask.</p><div class="actions"><button type="button" class="btn small" id="wr">${d.body?'Rewrite':'Write it for me'}</button>${d.body?'<button type="button" class="btn small outline" id="wr2">Try another version</button>':''}</div></div>
+   <div class="field"><label for="pb">Full petition</label><textarea id="pb" style="min-height:300px" placeholder="Use the writer above, or write your own.">${esc(d.body)}</textarea><div class="counter" id="pbc"></div></div>`;
+   const t=CG.$('#pt'),s=CG.$('#ps'),b=CG.$('#pb');
+   const upd=()=>{d.title=t.value;d.short=s.value;d.body=b.value;CG.$('#ptc').textContent=t.value.length+'/100';CG.$('#pbc').textContent=b.value.length+' characters';CG.$('#tips').innerHTML=CGWriter.titleTips(t.value).map(x=>'• '+esc(x)).join('<br>');save()};
+   [t,s,b].forEach(x=>x.oninput=upd);upd();
+   CG.$('#cats').onclick=e=>{const c=e.target.closest('[data-c]');if(!c)return;d.category=c.dataset.c;CG.$$('#cats .chip').forEach(x=>x.classList.toggle('dark',x===c));save()};
+   const write=v=>{if(!d.title.trim()||!d.short.trim()){CG.toast('Add a title and a few sentences first');return}d.variant=v;d.body=CGWriter.write({...d,category:d.category||'Other'},v);save();this.draw();CG.$('#pb').scrollIntoView({behavior:'smooth',block:'center'})};
+   CG.$('#wr').onclick=()=>write(d.variant);const w2=CG.$('#wr2');if(w2)w2.onclick=()=>write(d.variant+1)},
+  ok(){if(d.title.trim().length<10)return'Write a title of at least 10 characters.';if(!d.category)return'Choose a topic.';if(d.body.trim().length<80)return'Write the full petition, or use "Write it for me".';const s=CG.screen(d.title+' '+d.body);return ''}},
+ {title:'Add a photo',draw(){S.innerHTML=`<div class="eyebrow">Step 4 of 5 · optional</div><h2>Add a photo.</h2><p class="lead">Petitions with a photo get shared more. One photo only. Do not show faces of people who have not agreed.</p>
+   ${d.image?`<div class="photo-prev"><img src="${d.image}" alt="Your petition photo"><button class="btn small" id="rm" type="button">Remove photo</button></div>`:`<label class="drop" id="drop" for="file"><b style="font-size:15px;color:var(--ink)">Drop a photo here, or click to choose</b><span>JPG or PNG. We resize it for fast loading on mobile data.</span></label><input type="file" id="file" accept="image/*" hidden>`}`;
+   const rm=CG.$('#rm');if(rm)rm.onclick=()=>{d.image=null;save();this.draw()};
+   const f=CG.$('#file'),dr=CG.$('#drop');if(f){const take=file=>{if(!file||!/^image\//.test(file.type)){CG.toast('Choose an image file');return}compress(file).then(u=>{d.image=u;save();this.draw()}).catch(()=>CG.toast('Could not read that image'))};
+     f.onchange=()=>take(f.files[0]);['dragover','dragenter'].forEach(ev=>dr.addEventListener(ev,e=>{e.preventDefault();dr.classList.add('over')}));['dragleave','drop'].forEach(ev=>dr.addEventListener(ev,()=>dr.classList.remove('over')));dr.addEventListener('drop',e=>{e.preventDefault();take(e.dataTransfer.files[0])})}},
+  ok(){return''}},
+ {title:'Review and publish',draw(){const fake={id:'preview',title:d.title,scope:d.scope,country:d.country,adm1:d.adm1,adm2:d.adm2,target:d.target,image:d.image,status:'open',signs:[],base:0,recent:0,category:d.category};
+   S.innerHTML=`<div class="eyebrow">Step 5 of 5</div><h2>Review and publish.</h2><p class="lead">Check everything. You can post updates after publishing.</p>
+   <div class="grid2" style="margin-top:0"><div class="dpanel"><div class="chips"><span class="chip dark">${esc(d.category)}</span><span class="chip">${esc(CG.scopeLabel(fake))}</span></div><h3 style="font-size:24px;margin:12px 0">${esc(d.title)}</h3><p style="font-size:12px"><b>To:</b> ${esc(d.target.name?d.target.name+', ':'')}${esc(d.target.title)}</p><div style="font-size:13px;line-height:1.6;max-height:260px;overflow:auto">${esc(d.body).split(/\n\s*\n/).map(x=>'<p>'+x.replace(/\n/g,'<br>')+'</p>').join('')}</div></div>
+   <div style="display:grid;gap:10px;align-content:start"><div style="max-width:100%">${CG.card(fake).replace('<a ','<div ').replace(/<\/a>$/,'</div>').replace('href="petition.html#preview" data-pet="preview"','')}</div>
+   <div class="field"><label for="goal">Signature goal</label><select id="goal">${[500,1000,2500,5000,10000,25000,50000,100000].map(n=>`<option value="${n}" ${+d.goal===n?'selected':''}>${CG.fmt(n)}</option>`).join('')}</select></div>
+   <label class="check"><input type="checkbox" id="agree"> This petition is truthful, does not target a private person, and follows the <a href="about.html" target="_blank">community guidelines</a>.</label></div></div>`;
+   CG.$('#goal').onchange=e=>{d.goal=+e.target.value;save()}},
+  ok(){return CG.$('#agree')&&!CG.$('#agree').checked?'Confirm the guidelines to publish.':''}}
+];
+async function compress(file){const url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)});
+  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+  let max=1100,q=.74,out;do{const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',q);max-=200;q-=.08}while(out.length>260000&&max>400);return out}
+function go(i){d.step=Math.max(0,Math.min(STEPS.length-1,i));save();CG.$$('#prog i').forEach((x,j)=>x.classList.toggle('on',j<=d.step));STEPS[d.step].draw();
+  CG.$('#back').style.visibility=d.step?'visible':'hidden';CG.$('#next').textContent=d.step===STEPS.length-1?'Publish petition':'Continue →';window.scrollTo(0,0)}
+CG.$('#back').onclick=()=>go(d.step-1);
+CG.$('#next').onclick=()=>{const err=STEPS[d.step].ok();if(err){CG.toast(err);return}if(d.step<STEPS.length-1){go(d.step+1);return}publish()};
+function publish(){CG.requireUser(u=>{const D=CG.db();const flag=CG.screen(d.title+' '+d.body);
+  const p={id:'p_'+d.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)+'-'+Math.random().toString(36).slice(2,6),title:d.title.trim(),short:d.short.trim(),body:d.body.trim(),category:d.category,scope:d.scope,country:d.scope==='africa'?'':d.country,adm1:['state','local'].includes(d.scope)?d.adm1:'',adm2:d.scope==='local'?d.adm2:'',target:{title:d.target.title.trim(),name:d.target.name.trim()},image:d.image,creatorId:u.id,status:flag?'pending':'open',flag,created:Date.now(),goal:+d.goal||1000,base:0,recent:0,signs:[],views:0,shares:0,updates:[],reports:0};
+  p.signs.push({uid:u.id,name:u.name.split(' ')[0],at:Date.now(),country:u.country,adm1:u.adm1||p.adm1,adm2:u.adm2||p.adm2,public:true});
+  D.petitions.unshift(p);CG.log(`Petition ${flag?'held for review':'published'}: "${p.title}"`);
+  if(!CG.save()){D.petitions.shift();p.image=null;D.petitions.unshift(p);if(!CG.save()){CG.toast('Storage full. Could not publish.');return}CG.toast('Published without the photo: browser storage is full')}
+  CG.ls.del(KEY);if(flag)CG.toast('Held for review: '+flag);CG.go('petition.html',{id:p.id,fresh:1})},'Sign in to publish')}
+go(d.step);
+})();
+</script>
+</body>
+</html>

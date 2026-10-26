@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="home">
+<div id="siteHeader"></div>
+<main>
+<div class="wrap hero-rot">
+  <div class="eyebrow">Petitions for all 54 African countries</div>
+  <h1>Change starts in<br><span class="rot" id="rot" aria-live="polite"></span></h1>
+  <p style="font-size:16px;color:#555;max-width:560px">Start a petition for your street, your state or your whole country. We help you write it, show you who is in charge, and give you share cards for WhatsApp.</p>
+  <div class="hero-cta"><a class="btn" href="start.html">Start a petition ↗</a><a class="btn outline" href="browse.html">Browse petitions</a></div>
+  <form class="searchbar" id="hs" role="search"><input id="hq" type="search" placeholder="Search petitions, places or leaders" aria-label="Search petitions"><button type="submit">Search</button></form>
+  <div class="statrow" id="stats"></div>
+</div>
+
+<section class="stage-sec" id="trending"></section>
+
+<section><div class="wrap">
+  <div class="sectionhead"><div><div class="eyebrow">Know who's in charge</div><h2>Every country. Every local area.</h2></div><p>Hover to see who leads each country, state and region. Click to drill down to local government areas and districts.</p></div>
+  <div class="map-layout">
+    <div class="map-side"><div class="box" id="hd"></div></div>
+    <div id="hmap" style="height:560px"></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sectionhead"><div><div class="eyebrow">Victories</div><h2>Petitions that won.</h2></div><p>Real change, delivered by people who signed and shared.</p></div>
+  <div class="vict" id="vict"></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sectionhead"><div><div class="eyebrow">How it works</div><h2>Three steps to change.</h2></div></div>
+  <div class="steps3">
+    <div><b>1</b><h3>Start</h3><p>Pick your local area, state or country. Write a few lines and our writer turns it into a full petition. Add one photo.</p></div>
+    <div><b>2</b><h3>Share</h3><p>Get ready-made cards for WhatsApp, Status, X and Facebook. Every share brings in new signatures.</p></div>
+    <div><b>3</b><h3>Win</h3><p>Your petition is addressed to the leader in charge. Post updates as they respond, and celebrate when you win.</p></div>
+  </div>
+  <p style="margin-top:28px"><a class="btn" href="start.html">Start your petition ↗</a></p>
+</div></section>
+</main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/geo/africa.js"></script>
+<script src="assets/map.js"></script>
+<script src="assets/geo/points.js"></script>
+<script src="assets/stage.js"></script>
+<script data-page-script>
+(function(){
+const D=CG.db();
+// rotating place names
+const places=['Lagos.','Nairobi.','Accra.','Kano.','Johannesburg.','Kumasi.','Mombasa.','Dakar.','Kampala.','Addis Ababa.','your street.'];
+const rot=CG.$('#rot');rot.innerHTML=places.map((p,i)=>`<span class="${i?'':'on'}">${p}</span>`).join('');let ri=0;
+const spans=CG.$$('#rot span');
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{const a=spans[ri];ri=(ri+1)%spans.length;const b=spans[ri];a.classList.remove('on');a.classList.add('out');b.classList.remove('out');b.classList.add('on');setTimeout(()=>a.classList.remove('out'),650)},2200);
+// stats
+const live=D.petitions.filter(CG.live);const total=live.reduce((s,p)=>s+CG.count(p),0);const areas=Object.values(CG.GEO).reduce((s,g)=>s+g.adm1.length+g.adm2.length,0);
+CG.$('#stats').innerHTML=`<div><strong>${CG.short(total)}</strong><span>Signatures</span></div><div><strong>${D.petitions.filter(p=>p.status==='open').length}</strong><span>Live petitions</span></div><div><strong>${D.petitions.filter(p=>p.status==='victory').length}</strong><span>Victories</span></div><div><strong>54</strong><span>Countries</span></div><div><strong>${CG.fmt(areas)}</strong><span>Areas mapped</span></div>`;
+CG.$('#hs').onsubmit=e=>{e.preventDefault();CG.go('browse.html',{q:CG.$('#hq').value})};
+// trending stage
+CG.stage(CG.$('#trending'));
+// victories
+const v=D.petitions.filter(p=>p.status==='victory').sort((a,b)=>b.wonAt-a.wonAt).slice(0,3);
+CG.$('#vict').innerHTML=v.map(p=>`<article><a href="petition.html#${p.id}" data-pet="${p.id}"><span class="chip">Victory · ${CG.esc(CG.scopeLabel(p))}</span><h3>${CG.esc(p.title)}</h3><p>${CG.esc(p.outcome||'')}</p><p style="margin-top:8px;color:#fff;font-weight:800">${CG.fmt(CG.count(p))} signatures</p></a></article>`).join('');
+// map
+const sig=CG.sigIndex();const hd=CG.$('#hd');
+const map=new CGMap(CG.$('#hmap'),{values:()=>({data:sig,label:'Signatures',fmt:x=>CG.short(Math.round(x))}),onChange:(s,m)=>{
+  const id=s.adm2||s.sel||s.adm1||s.cc;
+  if(!id){hd.innerHTML=`<div class="eyebrow">Africa</div><h3 style="font-size:26px;margin:6px 0">Pick a country</h3><p class="smallnote">Hover any country to see its head of state. Click to see its ${'states and regions'}.</p><div class="kv"><span>Countries</span><span>54</span><span>Areas mapped</span><span>${CG.fmt(areas)}</span><span>Signatures</span><span>${CG.short(total)}</span></div>`;return}
+  const L=CG.leader(id);const name=CG.GEO[id]?CG.COUNTRIES[id]:CG.areaName(id);const pets=CG.petsIn(id);
+  hd.innerHTML=`<div class="eyebrow">${CG.GEO[id]?'Country':CG.esc(CG.area(id).level===1?m.geo.l1:m.geo.l2)}</div><h3 style="font-size:26px;margin:6px 0 10px">${CG.esc(name)}</h3>
+  ${L&&L.title?`<div class="leader"><small>${CG.esc(L.office||L.title)}</small><strong>${CG.esc(L.name||'Not yet listed')}</strong>${L.gov?`<small style="margin-top:6px">${CG.esc(L.gov.title)}</small><strong>${CG.esc(L.gov.name)}</strong>`:''}</div>`:''}
+  <div class="kv"><span>Signatures from here</span><span>${CG.fmt(sig[id]||0)}</span><span>Petitions about here</span><span>${pets.length}</span></div>
+  <p style="margin:14px 0 0;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="hStart">Start a petition here</button><button class="btn small outline" id="hOpen">Open full map</button></p>`;
+  CG.$('#hStart').onclick=()=>CG.go('start.html',{cc:s.cc,adm1:s.adm1||(CG.area(id)?.level===1?id:''),adm2:s.adm2||''});
+  CG.$('#hOpen').onclick=()=>CG.go('map.html',{cc:s.cc,adm1:s.adm1,adm2:s.adm2})}});
+map.open(null,null,null,true);
+})();
+</script>
+</body>
+</html>

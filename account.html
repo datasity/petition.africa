@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>My Petitions · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="account">
+<div id="siteHeader"></div>
+<main><div class="wrap pagehead" style="padding-bottom:20px"><div class="eyebrow">My petitions</div><h1 id="hi">Your petitions.</h1></div>
+<section style="padding-top:0"><div class="wrap" id="acct"></div></section></main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script data-page-script>
+(function(){
+const D=CG.db();const el=CG.$('#acct');const esc=CG.esc;
+function render(){const u=CG.user();
+  if(!u){CG.$('#hi').textContent='Sign in to see your petitions.';el.innerHTML=`<div class="box" style="max-width:560px"><p>Use your phone number to sign in. No password needed.</p><button class="btn" id="si">Sign in with phone</button></div>`;CG.$('#si').onclick=()=>CG.openSignIn();return}
+  CG.$('#hi').textContent='Hello, '+u.name.split(' ')[0]+'.';
+  const started=D.petitions.filter(p=>p.creatorId===u.id).sort((a,b)=>b.created-a.created);
+  const signed=D.petitions.filter(p=>p.signs.some(s=>s.uid===u.id)&&p.creatorId!==u.id);
+  el.innerHTML=`<div class="acct-grid"><div style="display:grid;gap:12px;align-content:start">
+  <div class="box"><div class="profile-strip"><div class="avatar">${esc(u.name[0]||'?')}</div><div><strong>${esc(u.name)}</strong><span>${esc(u.phone.replace(/\d(?=\d{3})/g,'•'))}</span></div></div>
+  <div class="kv" style="margin:0"><span>Petitions started</span><span>${started.length}</span><span>Petitions signed</span><span>${signed.length+started.length}</span><span>Member since</span><span>${CG.date(u.joined)}</span></div></div>
+  <div class="box"><div class="eyebrow">My area</div><p style="font-weight:800;margin:6px 0 10px">${esc(CG.place(u.country,u.adm1,u.adm2)||'Not set')}</p><div id="lp"></div><button class="btn small outline" id="sv">Save area</button><p class="smallnote">Used for "Near me" and to show where signatures come from.</p></div>
+  <div class="box"><div class="eyebrow">Account</div><div class="actions" style="margin-top:10px"><button class="btn small outline" id="so">Sign out</button><button class="btn small danger" id="del">Delete account</button></div></div></div>
+  <div style="display:grid;gap:14px;min-width:0">
+  <div class="dpanel"><h4><span>Petitions I started</span><a class="btn small" href="start.html">Start a petition</a></h4>${started.length?`<div class="table-wrap"><table><thead><tr><th>Petition</th><th>Status</th><th class="num">Signatures</th><th class="num">Shares</th><th></th></tr></thead><tbody>${started.map(p=>`<tr><td class="wrapcell"><b>${esc(p.title)}</b>${p.flag?`<br><small style="color:var(--danger)">${esc(p.flag)}</small>`:''}</td><td><span class="status ${p.status==='victory'?'live':p.status}">${p.status}</span></td><td class="num">${CG.fmt(CG.count(p))}</td><td class="num">${CG.fmt(p.shares||0)}</td><td><a class="btn small outline" href="petition.html#${p.id}" data-pet="${p.id}">Open</a></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">You have not started a petition yet.</div>'}</div>
+  <div class="dpanel"><h4>Petitions I signed</h4>${signed.length?`<div class="pgrid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${signed.map(p=>CG.card(p)).join('')}</div>`:'<div class="empty">Nothing signed yet. <a href="browse.html">Find a petition</a>.</div>'}</div></div></div>`;
+  const pk=CG.locationPicker(CG.$('#lp'),u,{prefix:'ac',optional:true});
+  CG.$('#sv').onclick=()=>{const uu=D.users.find(x=>x.id===u.id);Object.assign(uu,pk.get());CG.setCountry(uu.country);CG.save();CG.toast('Area saved');render()};
+  CG.$('#so').onclick=CG.signOut;
+  CG.$('#del').onclick=()=>CG.confirm('Delete your account?','Your profile is removed. Your signatures stay as anonymous counts. Petitions you started stay live.','Delete account',()=>{D.petitions.forEach(p=>p.signs.forEach(s=>{if(s.uid===u.id){s.uid='deleted';s.name='Supporter';s.comment=''}}));D.users=D.users.filter(x=>x.id!==u.id);CG.save();CG.ls.del('pa_session');location.href='index.html'})}
+render();
+})();
+</script>
+</body>
+</html>

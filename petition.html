@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Petition · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="browse">
+<div id="siteHeader"></div>
+<main class="wrap" id="pp"></main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/geo/africa.js"></script>
+<script src="assets/map.js"></script>
+<script src="assets/cards.js"></script>
+<script data-page-script>
+(function(){
+const D=CG.db();const P=CG.params();const p=CG.pet(P.id)||CG.trending()[0];const el=CG.$('#pp');
+if(!p||p.status==='rejected'||(p.status==='pending'&&p.creatorId!==CG.user()?.id&&!CG.isAdmin())){el.innerHTML='<div class="pagehead"><h1>Petition not found.</h1><p>It may have been removed or is waiting for review.</p><a class="btn" href="browse.html">Browse petitions</a></div>';return}
+document.title=p.title+' · Petition.africa';
+if(!sessionStorage.getItem('pa_v_'+p.id)){try{sessionStorage.setItem('pa_v_'+p.id,'1')}catch(e){}CG.track(p,'views')}
+const geo=CG.petGeo(p);
+function recent(){const r=CG.rng(CG.hash(p.id+'r'));const areas=Object.keys(geo).filter(k=>k.includes('.')&&CG.area(k)&&(CG.area(k).level===2||!CG.GEO[k.slice(0,2)].l2)).sort((a,b)=>geo[b]-geo[a]).slice(0,40);
+  const real=p.signs.filter(s=>s.public!==false).slice(-12).reverse().map(s=>({who:s.name,where:CG.areaName(s.adm2)||CG.areaName(s.adm1)||CG.COUNTRIES[s.country],at:s.at,c:s.comment}));
+  const demo=p.status==='open'&&p.base?Array.from({length:8},(_,i)=>({who:'A supporter',where:CG.areaName(areas[Math.floor(r()*areas.length)])||CG.COUNTRIES[p.country]||'Africa',at:Date.now()-Math.round((i+1)*(3+r()*25)*60e3)})):[];
+  return real.concat(demo).sort((a,b)=>b.at-a.at).slice(0,12)}
+function render(){const u=CG.user();const signed=u&&p.signs.some(s=>s.uid===u.id);const c=CG.count(p),pct=Math.min(100,c/p.goal*100);const mine=u&&p.creatorId===u.id;
+  const comments=p.signs.filter(s=>s.comment&&s.public!==false).slice(-6).reverse();
+  el.innerHTML=`<div class="pp"><div class="pp-main">
+  <div class="chips"><span class="chip dark">${CG.esc(p.category)}</span><span class="chip">${CG.esc(CG.scopeLabel(p))}</span>${p.status==='victory'?'<span class="chip lime">Victory</span>':''}${p.status==='pending'?'<span class="chip lime">Waiting for review</span>':''}${p.status==='closed'?'<span class="chip">Closed</span>':''}</div>
+  <h1>${CG.esc(p.title)}</h1>
+  <div class="pp-meta"><span>Started ${CG.date(p.created)}</span><span><b>${CG.fmt(CG.recentCount(p))}</b> signed this week</span><span><b>${CG.fmt(p.shares||0)}</b> shares</span></div>
+  <div class="pp-hero">${CG.img(p)}</div>
+  <div class="target"><span class="ico">TO</span><div><small>Petition to</small><strong>${CG.esc(p.target.name||'')}</strong>${p.target.name?'<br>':''}<span style="font-size:12px">${CG.esc(p.target.title)}</span></div></div>
+  ${p.status==='victory'?`<div class="notice"><b>Victory, ${CG.date(p.wonAt)}:</b> ${CG.esc(p.outcome||'')}</div>`:''}
+  <div class="pp-body">${p.body.split(/\n\s*\n/).map(x=>`<p>${CG.esc(x).replace(/\n/g,'<br>')}</p>`).join('')}</div>
+  ${p.updates.length||mine?`<h3 style="font-size:24px;margin:30px 0 10px">Updates</h3><div class="feed">${p.updates.map(x=>`<div><span>${CG.esc(x.text)}</span><time>${CG.date(x.at)}</time></div>`).join('')||'<div><span>No updates yet.</span></div>'}</div>`:''}
+  ${mine&&p.status==='open'?`<form id="upF" class="box" style="margin-top:12px"><div class="eyebrow">You started this petition</div><div class="field" style="margin-top:10px"><label for="upT">Post an update for supporters</label><textarea id="upT" required maxlength="500" placeholder="What has happened since you started?"></textarea></div><div class="actions"><button class="btn small" type="submit">Post update</button><button class="btn small outline" type="button" id="winBtn">We won</button></div></form>`:''}
+  <h3 style="font-size:24px;margin:34px 0 10px">Where signatures come from</h3><div id="pmap" style="height:420px"></div><div id="topAreas" class="mini-bars" style="margin-top:14px"></div>
+  ${comments.length?`<h3 style="font-size:24px;margin:34px 0 10px">Why people are signing</h3><div class="feed">${comments.map(s=>`<div><span>“${CG.esc(s.comment)}” <b>${CG.esc(s.name)}</b>, ${CG.esc(CG.areaName(s.adm1)||CG.COUNTRIES[s.country])}</span><time>${CG.ago(s.at)}</time></div>`).join('')}</div>`:''}
+  <h3 style="font-size:24px;margin:34px 0 10px">Share cards</h3><p class="smallnote" style="margin-top:0">Ready-made images for WhatsApp, Status, X and Facebook.</p><div id="cards"></div>
+  <p style="margin-top:26px"><button class="linkbtn" id="rep" style="color:var(--muted)">Report this petition</button></p>
+  </div>
+  <aside><div class="signbox"><div><div class="count">${CG.fmt(c)}</div><div class="smallnote" style="margin:4px 0 0">signatures · goal ${CG.fmt(p.goal)}</div><div class="progress" style="margin:10px 0 0"><span style="width:${pct}%"></span></div></div>
+  ${p.status!=='open'?`<div class="notice" style="margin:0">${p.status==='victory'?'This petition won. Thank you to everyone who signed.':p.status==='pending'?'Signing opens after review.':'This petition is closed.'}</div>`:signed?`<div class="notice" style="margin:0"><b>You signed this petition.</b> Now share it. Petitions shared on WhatsApp get far more signatures.</div>`:
+  `<form id="sf" style="display:grid;gap:10px">${u&&u.adm1?'':'<div id="sloc"></div>'}<textarea id="sc" maxlength="280" placeholder="Why are you signing? (optional)"></textarea><label class="check"><input type="checkbox" id="spub" checked> Show my first name and area</label><button class="btn bigbtn" type="submit">Sign this petition</button></form>`}
+  <div>${CG.shareLinks(p)}</div>
+  <div><div class="eyebrow" style="margin-bottom:8px">Recent signatures</div><div class="recent">${recent().map(s=>`<div><span><b>${CG.esc(s.who)}</b> in ${CG.esc(s.where)}</span><time>${CG.ago(s.at)}</time></div>`).join('')||'<div>Be the first to sign.</div>'}</div></div>
+  </div></aside></div>`;
+  CG.bindShare(el,p);
+  const sl=CG.$('#sloc');let lp=null;if(sl)lp=CG.locationPicker(sl,{country:u?.country||p.country||CG.country(),adm1:p.scope!=='africa'&&p.scope!=='country'?p.adm1:''},{prefix:'sl',optional:true});
+  const sf=CG.$('#sf');if(sf)sf.onsubmit=e=>{e.preventDefault();const loc=lp?lp.get():{};CG.sign(p.id,{...loc,comment:CG.$('#sc').value.trim(),public:CG.$('#spub').checked},ok=>{if(ok){render();afterSign()}})};
+  const uf=CG.$('#upF');if(uf){uf.onsubmit=e=>{e.preventDefault();p.updates.unshift({at:Date.now(),text:CG.$('#upT').value.trim()});CG.log(`Update on "${p.title}"`);CG.save();CG.toast('Update posted');render()};
+    CG.$('#winBtn').onclick=()=>{const m=CG.modal(`<div class="modal-head"><div><div class="eyebrow">Declare victory</div><h2>What changed?</h2></div><button class="close" data-close>Close</button></div><form id="wf"><div class="field"><label for="wt">Describe the win</label><textarea id="wt" required maxlength="400"></textarea></div><button class="btn" type="submit">Submit for confirmation</button><p class="smallnote">Our team checks victories before they are shown publicly.</p></form>`);
+      CG.$('#wf',m).onsubmit=ev=>{ev.preventDefault();p.victoryClaim=CG.$('#wt',m).value.trim();CG.log(`Victory claimed on "${p.title}"`);CG.save();CG.closeModal();CG.toast('Sent for confirmation')}}}
+  CG.$('#rep').onclick=()=>{const m=CG.modal(`<div class="modal-head"><div><div class="eyebrow">Report</div><h2>What is wrong?</h2></div><button class="close" data-close>Close</button></div><form id="rf" class="options">${['Incites violence or hate','Targets a private person','False or misleading','Spam or scam','Other'].map((r,i)=>`<label><input type="radio" name="rr" value="${r}" ${i?'':'checked'}> ${r}</label>`).join('')}<button class="btn" type="submit" style="margin-top:10px">Send report</button></form>`);
+    CG.$('#rf',m).onsubmit=ev=>{ev.preventDefault();D.reports.push({id:CG.uid('rp'),pid:p.id,reason:CG.$('input[name=rr]:checked',m).value,at:Date.now(),status:'open'});p.reports=(p.reports||0)+1;if(p.reports>=3&&p.status==='open'){p.status='pending';CG.log(`"${p.title}" hidden after 3 reports`)}CG.save();CG.closeModal();CG.toast('Thanks. Our team will review it.')}};
+  CG.renderCards(CG.$('#cards'),p);drawMap();
+}
+function afterSign(){const m=CG.modal(`<div class="modal-head"><div><div class="eyebrow">Signed</div><h2>Thank you. Now share it.</h2></div><button class="close" data-close>Close</button></div><p style="font-size:13px">Petitions grow when people share them. Send it to one WhatsApp group now.</p>${CG.shareLinks(p)}<div id="mcards" style="margin-top:16px"></div>`,{wide:true});CG.bindShare(m,p);CG.renderCards(CG.$('#mcards',m),p)}
+function drawMap(){const lock=p.scope==='africa'?null:p.country;
+  const map=new CGMap(CG.$('#pmap'),{lock,values:()=>({data:geo,label:'Signatures',fmt:x=>CG.short(Math.round(x))})});
+  if(lock)map.open(lock,p.scope==='state'||p.scope==='local'?p.adm1:null,null,true);else map.open(null,null,null,true);
+  const keys=Object.keys(geo).filter(k=>p.scope==='africa'?CG.GEO[k]:CG.area(k)&&CG.area(k).level===(p.scope==='country'?1:CG.GEO[p.country].l2?2:1)).sort((a,b)=>geo[b]-geo[a]).slice(0,5);const mx=geo[keys[0]]||1;
+  CG.$('#topAreas').innerHTML=keys.map(k=>`<div class="mini-bar"><div><span>${CG.esc(CG.GEO[k]?CG.COUNTRIES[k]:CG.areaName(k))}</span><span>${CG.fmt(geo[k])}</span></div><div class="bar"><span style="width:${geo[k]/mx*100}%"></span></div></div>`).join('')}
+render();
+if(P.fresh){try{sessionStorage.removeItem('pa_nav')}catch(e){}const m=CG.modal(`<div class="modal-head"><div><div class="eyebrow">${p.status==='pending'?'Submitted for review':'Your petition is live'}</div><h2>${p.status==='pending'?'We will check it shortly.':'Now get your first 10 signatures.'}</h2></div><button class="close" data-close>Close</button></div><p style="font-size:13px">Share it with friends and family first. Petitions that reach 10 signatures quickly are far more likely to grow.</p>${CG.shareLinks(p)}<div id="mcards" style="margin-top:16px"></div>`,{wide:true});CG.bindShare(m,p);CG.renderCards(CG.$('#mcards',m),p)}
+})();
+</script>
+</body>
+</html>

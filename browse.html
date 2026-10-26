@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Browse Petitions · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="browse">
+<div id="siteHeader"></div>
+<main>
+<div class="wrap pagehead" style="padding-bottom:20px">
+  <div class="eyebrow">Browse</div><h1 id="bh">Petitions across Africa.</h1>
+  <div class="toolbar" style="margin-top:14px">
+    <div class="filters" id="tabs"><button class="filter active" data-t="trending">Trending</button><button class="filter" data-t="new">New</button><button class="filter" data-t="top">Most signed</button><button class="filter" data-t="victories">Victories</button><button class="filter" data-t="near">Near me</button></div>
+  </div>
+  <div class="toolbar"><input class="grow" id="q" type="search" placeholder="Search petitions, places or leaders" aria-label="Search"><select id="cc" aria-label="Country"><option value="">All countries</option></select><select id="cat" aria-label="Topic"><option value="">All topics</option></select></div>
+</div>
+<section style="padding-top:0"><div class="wrap"><p class="smallnote" id="cnt" style="margin:0 0 12px"></p><div class="pgrid" id="list"></div></div></section>
+</main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script data-page-script>
+(function(){
+const D=CG.db();const P=CG.params();let tab=location.hash==='#victories'?'victories':(P.tab||'trending');
+CG.$('#cc').innerHTML+=CG.countryOptions('');CG.$('#cat').innerHTML+=CG.CATS.map(c=>`<option>${CG.esc(c)}</option>`).join('');
+if(P.q)CG.$('#q').value=P.q;if(P.cc)CG.$('#cc').value=P.cc;
+function draw(){CG.$$('#tabs .filter').forEach(x=>x.classList.toggle('active',x.dataset.t===tab));
+  const q=CG.$('#q').value.trim().toLowerCase(),cc=CG.$('#cc').value,cat=CG.$('#cat').value,u=CG.user();
+  let l=D.petitions.filter(p=>tab==='victories'?p.status==='victory':p.status==='open');
+  if(cc)l=l.filter(p=>p.country===cc||(p.scope==='africa'&&tab!=='near'));
+  if(cat)l=l.filter(p=>p.category===cat);
+  if(q)l=l.filter(p=>(p.title+' '+p.short+' '+p.target.title+' '+p.target.name+' '+CG.scopeLabel(p)).toLowerCase().includes(q));
+  if(tab==='near'){const c=u?.country||CG.country();l=l.filter(p=>p.country===c);if(u&&u.adm1)l.sort((a,b)=>(b.adm1===u.adm1)-(a.adm1===u.adm1)||CG.attention(b)-CG.attention(a))}
+  if(tab==='trending'||tab==='near'&&!(u&&u.adm1))l.sort((a,b)=>CG.attention(b)-CG.attention(a));
+  if(tab==='new')l.sort((a,b)=>b.created-a.created);if(tab==='top')l.sort((a,b)=>CG.count(b)-CG.count(a));if(tab==='victories')l.sort((a,b)=>b.wonAt-a.wonAt);
+  CG.$('#bh').textContent=tab==='victories'?'Petitions that won.':tab==='near'?'Petitions near you.':'Petitions across Africa.';
+  CG.$('#cnt').textContent=l.length+' petition'+(l.length===1?'':'s')+(tab==='near'?' in '+CG.COUNTRIES[u?.country||CG.country()]:'');
+  CG.$('#list').innerHTML=l.length?l.map((p,i)=>CG.card(p,tab==='trending'&&i<10?i+1:0)).join(''):`<div class="empty" style="grid-column:1/-1">No petitions match. <a href="start.html">Start one</a>.</div>`}
+CG.$('#tabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;tab=b.dataset.t;draw()};
+CG.$('#q').oninput=draw;CG.$('#cc').onchange=draw;CG.$('#cat').onchange=draw;
+window.addEventListener('hashchange',()=>{if(location.hash==='#victories'){tab='victories';draw()}});
+draw();try{sessionStorage.removeItem('pa_nav')}catch(e){}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="admin" class="admin-body">
+<div id="gate" class="hidden"><div class="topline"></div><div class="wrap" style="max-width:520px;padding-block:70px">
+  <a href="index.html" class="brand">PETITION<em>.</em>AFRICA</a><h1 style="font-size:52px;margin-top:30px">Admin sign in.</h1>
+  <form class="box" id="gf"><div class="field"><label for="gp">Admin password</label><input id="gp" type="password" required autocomplete="current-password"></div><button class="btn" type="submit">Sign in</button>
+  <p class="smallnote">Demo password: <b>petitionafrica</b>. A live site needs staff accounts with two-factor sign-in and audit logs.</p><div id="ge" class="smallnote" style="color:var(--danger)"></div></form>
+  <p style="margin-top:16px"><a class="arrow-link" href="index.html">← Back to the site</a></p></div></div>
+<div id="shell" class="admin-shell hidden">
+  <aside class="admin-side"><a href="index.html" class="brand">PETITION<em>.</em>AFRICA</a><div class="eyebrow">Admin</div>
+    <nav id="anav"><button data-v="overview">Overview</button><button data-v="petitions">Petitions</button><button data-v="reports">Reports</button><button data-v="leaders">Leaders</button><button data-v="supporters">Supporters</button><button data-v="geography">Geography</button><button data-v="settings">Settings</button></nav>
+    <div class="side-foot"><a href="index.html">View site ↗</a><button class="btn small outline" id="lo" style="background:transparent;color:#ddd;border-color:#555">Sign out</button></div></aside>
+  <main class="admin-main" id="V"></main>
+</div>
+
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script data-page-script>
+(function(){
+const D=CG.db();const V=CG.$('#V');const esc=CG.esc;let cur='overview',ctx={};
+function gate(){const ok=CG.isAdmin();CG.$('#gate').classList.toggle('hidden',ok);CG.$('#shell').classList.toggle('hidden',!ok);if(ok)show(location.hash.slice(1)||'overview')}
+CG.$('#gf').onsubmit=e=>{e.preventDefault();if(CG.adminLogin(CG.$('#gp').value))gate();else CG.$('#ge').textContent='Wrong password.'};
+CG.$('#lo').onclick=()=>{CG.adminLogout();gate()};
+CG.$('#anav').onclick=e=>{const b=e.target.closest('[data-v]');if(b)show(b.dataset.v)};
+const pendingN=()=>D.petitions.filter(p=>p.status==='pending'||p.victoryClaim).length,repN=()=>D.reports.filter(r=>r.status==='open').length;
+function badges(){CG.$$('#anav button').forEach(b=>{const v=b.dataset.v;const n=v==='petitions'?pendingN():v==='reports'?repN():0;b.innerHTML=b.textContent.replace(/\d+$/,'').trim()+(n?` <b>${n}</b>`:'')})}
+function show(v,c){if(!VIEWS[v])v='overview';cur=v;ctx=c||{};try{history.replaceState(null,'','#'+v)}catch(e){}CG.$$('#anav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));badges();VIEWS[v]();window.scrollTo(0,0)}
+const top=(e,t,s,a)=>`<div class="admin-top"><div><div class="eyebrow">${e}</div><h2>${t}</h2>${s?`<p>${s}</p>`:''}</div><div class="actions">${a||''}</div></div>`;
+const VIEWS={
+overview(){const live=D.petitions.filter(p=>p.status==='open');const sigs=D.petitions.filter(CG.live).reduce((s,p)=>s+CG.count(p),0);const wk=D.petitions.reduce((s,p)=>s+CG.recentCount(p),0);
+  const tr=CG.trending().slice(0,8);const byC={};D.petitions.filter(CG.live).forEach(p=>{const k=p.country||'Africa-wide';byC[k]=(byC[k]||0)+CG.count(p)});const bc=Object.entries(byC).sort((a,b)=>b[1]-a[1]).slice(0,8);const mx=bc[0]?bc[0][1]:1;
+  V.innerHTML=top('Overview','Platform at a glance.','Live from the database. Seeded petitions and counts are demo data.')+
+  `<div class="metrics"><div class="metric-card"><span>Signatures</span><strong>${CG.short(sigs)}</strong><small>${CG.short(wk)} in the last 7 days</small></div><div class="metric-card"><span>Live petitions</span><strong>${live.length}</strong><small>${D.petitions.filter(p=>p.status==='victory').length} victories</small></div><div class="metric-card"><span>Needs review</span><strong>${pendingN()+repN()}</strong><small>${pendingN()} petitions · ${repN()} reports</small></div><div class="metric-card"><span>Supporters</span><strong>${D.users.length}</strong><small>signed up on this site</small></div></div>
+  <div class="grid2"><div class="dpanel"><h4>Trending now</h4><div class="table-wrap"><table><thead><tr><th>#</th><th>Petition</th><th class="num">This week</th><th class="num">Total</th><th class="num">Shares</th></tr></thead><tbody>${tr.map((p,i)=>`<tr><td>${i+1}</td><td class="wrapcell">${esc(p.title)}</td><td class="num">${CG.fmt(CG.recentCount(p))}</td><td class="num">${CG.fmt(CG.count(p))}</td><td class="num">${CG.fmt(p.shares||0)}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="dpanel"><h4>Signatures by country</h4><div class="mini-bars">${bc.map(([k,n])=>`<div class="mini-bar"><div><span>${esc(CG.COUNTRIES[k]||k)}</span><span>${CG.short(n)}</span></div><div class="bar"><span style="width:${n/mx*100}%"></span></div></div>`).join('')}</div><h4 style="margin-top:22px">Recent activity</h4><div class="feed">${D.activity.slice(0,8).map(a=>`<div><span>${esc(a.text)}</span><time>${CG.ago(a.at)}</time></div>`).join('')}</div></div></div>`},
+petitions(){let f=ctx.f||(pendingN()?'review':'open');
+  V.innerHTML=top('Petitions','Moderation.','Approve held petitions, confirm victories, feature or remove petitions.')+`<div class="toolbar"><div class="filters" id="pf">${[['review','Needs review'],['open','Live'],['victory','Victories'],['closed','Closed'],['rejected','Removed'],['all','All']].map(([k,l])=>`<button class="filter" data-f="${k}">${l}</button>`).join('')}</div><input class="grow" id="pq" type="search" placeholder="Search"></div><div class="dpanel"><div class="table-wrap"><table><thead><tr><th>Petition</th><th>Area</th><th>Status</th><th class="num">Signatures</th><th class="num">Reports</th><th>Started</th><th>Actions</th></tr></thead><tbody id="pt"></tbody></table></div></div>`;
+  const draw=()=>{CG.$$('#pf .filter').forEach(x=>x.classList.toggle('active',x.dataset.f===f));const q=CG.$('#pq').value.toLowerCase();
+    const l=D.petitions.filter(p=>(f==='all'||(f==='review'?(p.status==='pending'||p.victoryClaim):p.status===f))&&(!q||p.title.toLowerCase().includes(q))).sort((a,b)=>b.created-a.created);
+    CG.$('#pt').innerHTML=l.map(p=>`<tr><td class="wrapcell"><b>${esc(p.title)}</b>${p.featured?' <span class="chip lime">Featured</span>':''}${p.flag?`<br><small style="color:var(--danger)">Auto-check: ${esc(p.flag)}</small>`:''}${p.victoryClaim?`<br><small><b>Victory claimed:</b> ${esc(p.victoryClaim)}</small>`:''}</td><td>${esc(CG.scopeLabel(p))}</td><td><span class="status ${p.status==='victory'?'live':p.status}">${p.status}</span></td><td class="num">${CG.fmt(CG.count(p))}</td><td class="num">${p.reports||0}</td><td>${CG.date(p.created)}</td>
+    <td><div class="actions">${p.status==='pending'?`<button class="btn small" data-a="open|${p.id}">Approve</button><button class="btn small danger" data-a="rejected|${p.id}">Remove</button>`:''}${p.victoryClaim?`<button class="btn small" data-a="win|${p.id}">Confirm victory</button><button class="btn small outline" data-a="nowin|${p.id}">Decline</button>`:''}${p.status==='open'?`<button class="btn small outline" data-a="feat|${p.id}">${p.featured?'Unfeature':'Feature'}</button><button class="btn small outline" data-a="markwin|${p.id}">Mark victory</button><button class="btn small outline" data-a="closed|${p.id}">Close</button><button class="btn small danger" data-a="rejected|${p.id}">Remove</button>`:''}${['closed','rejected'].includes(p.status)?`<button class="btn small outline" data-a="open|${p.id}">Restore</button>`:''}<a class="btn small outline" href="petition.html#${p.id}" data-pet="${p.id}">View</a></div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty">Nothing here.</div></td></tr>'};
+  CG.$('#pf').onclick=e=>{const b=e.target.closest('[data-f]');if(b){f=b.dataset.f;draw()}};CG.$('#pq').oninput=draw;
+  CG.$('#pt').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const [a,id]=b.dataset.a.split('|');const p=CG.pet(id);
+    if(a==='feat'){D.petitions.forEach(x=>x.featured=false);p.featured=!p.featured}
+    else if(a==='win'){p.status='victory';p.outcome=p.victoryClaim;p.wonAt=Date.now();delete p.victoryClaim;CG.log(`Victory confirmed: "${p.title}"`)}
+    else if(a==='nowin'){delete p.victoryClaim}
+    else if(a==='markwin'){const m=CG.modal(`<div class="modal-head"><div><div class="eyebrow">Mark victory</div><h2>${esc(p.title)}</h2></div><button class="close" data-close>Close</button></div><form id="mw"><div class="field"><label for="mwt">What changed?</label><textarea id="mwt" required></textarea></div><button class="btn" type="submit">Confirm victory</button></form>`);CG.$('#mw',m).onsubmit=ev=>{ev.preventDefault();p.status='victory';p.outcome=CG.$('#mwt',m).value.trim();p.wonAt=Date.now();CG.log(`Victory: "${p.title}"`);CG.save();CG.closeModal();CG.toast('Marked as victory');show('petitions',{f})};return}
+    else{p.status=a;if(a==='open'){p.reports=0;delete p.flag}CG.log(`Petition "${p.title}" ${a==='open'?'approved':a==='rejected'?'removed':a}`)}
+    CG.save();CG.toast('Saved');badges();draw()};draw()},
+reports(){V.innerHTML=top('Reports','Reports and suggestions.','Petition reports from users, and suggested leader names.')+`<div class="dpanel"><div class="table-wrap"><table><thead><tr><th>Type</th><th>About</th><th>Detail</th><th>When</th><th>Actions</th></tr></thead><tbody id="rt"></tbody></table></div></div>`;
+  const draw=()=>{const l=D.reports.filter(r=>r.status==='open').sort((a,b)=>b.at-a.at);
+    CG.$('#rt').innerHTML=l.map(r=>{if(r.type==='leader'){const L=CG.leader(r.area);return `<tr><td><span class="chip">Leader</span></td><td class="wrapcell">${esc(L.office||L.title)} · ${esc(CG.GEO[r.area]?CG.COUNTRIES[r.area]:CG.place(CG.area(r.area).cc,CG.area(r.area).level===1?r.area:CG.area(r.area).parent,CG.area(r.area).level===2?r.area:''))}</td><td class="wrapcell"><b>${esc(r.name)}</b><br><small>Source: ${esc(r.src)}</small></td><td>${CG.ago(r.at)}</td><td><div class="actions"><button class="btn small" data-r="accept|${r.id}">Accept name</button><button class="btn small outline" data-r="dismiss|${r.id}">Dismiss</button></div></td></tr>`}
+      const p=CG.pet(r.pid);return `<tr><td><span class="chip">Petition</span></td><td class="wrapcell">${esc(p?p.title:'Deleted')}</td><td>${esc(r.reason)}</td><td>${CG.ago(r.at)}</td><td><div class="actions">${p&&p.status!=='rejected'?`<button class="btn small danger" data-r="remove|${r.id}">Remove petition</button>`:''}<button class="btn small outline" data-r="dismiss|${r.id}">Dismiss</button></div></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No open reports.</div></td></tr>'};
+  CG.$('#rt').onclick=e=>{const b=e.target.closest('[data-r]');if(!b)return;const [a,id]=b.dataset.r.split('|');const r=D.reports.find(x=>x.id===id);r.status='done';
+    if(a==='accept'){const L=CG.leader(r.area);D.leaders[r.area]={name:r.name,title:L.office||L.title,src:r.src,at:Date.now()};CG.log(`Leader updated: ${r.name}`)}
+    if(a==='remove'){const p=CG.pet(r.pid);p.status='rejected';D.reports.forEach(x=>{if(x.pid===r.pid)x.status='done'});CG.log(`Petition removed after report: "${p.title}"`)}
+    CG.save();CG.toast('Done');badges();draw()};draw()},
+leaders(){const cc=ctx.cc||'NG';const g=CG.GEO[cc];const a1=ctx.a1||'';
+  V.innerHTML=top('Leaders','Leaders directory.','Names shown on hover and suggested as petition targets. Edits here override the verified list.')+
+  `<div class="toolbar"><select id="lc">${CG.countryOptions(cc)}</select>${g.l2?`<select id="l1"><option value="">${esc(g.l1p)}</option>${CG.adm1List(cc).map(a=>`<option value="${a.id}" ${a.id===a1?'selected':''}>${esc(a.name)}</option>`).join('')}</select>`:''}<span class="smallnote" style="margin:0">Verified list checked ${esc(CG.L.verified)}</span></div>
+  <div class="dpanel"><div class="table-wrap"><table><thead><tr><th>Area</th><th>Office</th><th>Name</th><th>Source</th><th></th></tr></thead><tbody id="lt"></tbody></table></div></div>`;
+  const rows=[cc,...(a1?[a1,...CG.adm2List(cc,a1).map(x=>x.id)]:CG.adm1List(cc).map(x=>x.id))];
+  CG.$('#lt').innerHTML=rows.map(id=>{const L=CG.leader(id)||{};const nm=CG.GEO[id]?CG.COUNTRIES[id]+' (country)':CG.areaName(id);return `<tr data-id="${id}"><td><b>${esc(nm)}</b></td><td><input data-k="title" value="${esc(L.office||L.title||'')}" style="padding:7px;border:1px solid #ccc;width:200px"></td><td><input data-k="name" value="${esc(L.name||'')}" placeholder="Not yet listed" style="padding:7px;border:1px solid #ccc;width:200px"></td><td class="wrapcell"><small>${esc(L.src||'')}</small></td><td><div class="actions"><button class="btn small" data-save>Save</button>${D.leaders[id]?'<button class="btn small outline" data-reset>Revert</button>':''}</div></td></tr>`}).join('');
+  CG.$('#lc').onchange=e=>show('leaders',{cc:e.target.value});const s1=CG.$('#l1');if(s1)s1.onchange=e=>show('leaders',{cc,a1:e.target.value});
+  CG.$('#lt').onclick=e=>{const tr=e.target.closest('tr');if(!tr)return;const id=tr.dataset.id;
+    if(e.target.closest('[data-save]')){const name=CG.$('[data-k=name]',tr).value.trim(),title=CG.$('[data-k=title]',tr).value.trim();if(!name){CG.toast('Enter a name, or use Revert');return}D.leaders[id]={name,title,src:'Admin',at:Date.now()};CG.log(`Leader set: ${title} ${name}`);CG.save();CG.toast('Saved');show('leaders',{cc,a1})}
+    if(e.target.closest('[data-reset]')){delete D.leaders[id];CG.save();CG.toast('Reverted to verified list');show('leaders',{cc,a1})}}},
+supporters(){V.innerHTML=top('Supporters','People who signed up.','Phone numbers are masked.')+`<div class="dpanel"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Area</th><th class="num">Signed</th><th class="num">Started</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody id="st"></tbody></table></div></div>`;
+  const draw=()=>{CG.$('#st').innerHTML=D.users.slice().sort((a,b)=>b.joined-a.joined).map(u=>`<tr><td><b>${esc(u.name)}</b></td><td>${esc(u.phone.replace(/\d(?=\d{3})/g,'•'))}</td><td>${esc(CG.place(u.country,u.adm1,u.adm2))}</td><td class="num">${D.petitions.filter(p=>p.signs.some(s=>s.uid===u.id)).length}</td><td class="num">${D.petitions.filter(p=>p.creatorId===u.id).length}</td><td>${CG.date(u.joined)}</td><td><span class="status ${u.status}">${u.status}</span></td><td><button class="btn small ${u.status==='active'?'danger':'outline'}" data-u="${u.id}">${u.status==='active'?'Suspend':'Reactivate'}</button></td></tr>`).join('')||'<tr><td colspan="8"><div class="empty">No one has signed up on this browser yet.</div></td></tr>'};
+  CG.$('#st').onclick=e=>{const b=e.target.closest('[data-u]');if(!b)return;const u=D.users.find(x=>x.id===b.dataset.u);u.status=u.status==='active'?'suspended':'active';CG.save();draw()};draw()},
+geography(){const G=CG.GEO;V.innerHTML=top('Geography','Boundary coverage.','All 54 countries are bundled with the site. Source: geoBoundaries.')+
+  `<div class="dpanel"><div class="table-wrap"><table><thead><tr><th>Country</th><th>Level 1</th><th class="num">Count</th><th>Level 2</th><th class="num">Count</th><th>Head of state</th><th class="num">Level-1 leaders named</th></tr></thead><tbody>${Object.keys(CG.COUNTRIES).map(cc=>{const g=G[cc];const named=g.adm1.filter(a=>CG.leader(a[0])?.name).length;const h=CG.leader(cc);return `<tr><td><b>${esc(g.name)}</b></td><td>${esc(g.l1p)}</td><td class="num">${g.adm1.length}</td><td>${esc(g.l2p||'–')}</td><td class="num">${g.adm2.length||'–'}</td><td>${esc(h.name)}</td><td class="num">${named}/${g.adm1.length}</td></tr>`}).join('')}</tbody></table></div></div>`},
+settings(){V.innerHTML=top('Settings','Data.','The prototype database lives in this browser.')+`<div class="dpanel"><div class="kv" style="max-width:420px;margin-bottom:16px"><span>Petitions</span><span>${D.petitions.length}</span><span>Supporters</span><span>${D.users.length}</span><span>Leader overrides</span><span>${Object.keys(D.leaders).length}</span><span>Storage used</span><span>${Math.round((CG.ls.get('pa_db_v1')||'').length/1024)} KB</span></div><div class="actions"><button class="btn small outline" id="ex">Export database</button><button class="btn small danger" id="rs">Reset to demo data</button></div></div>`;
+  CG.$('#ex').onclick=()=>CG.copyBox('Database (JSON)',JSON.stringify(D,(k,v)=>k==='image'&&v?'[photo]':v,1));CG.$('#rs').onclick=()=>CG.confirm('Reset all data?','Everything in this browser returns to the demo state.','Reset',()=>{CG.resetDemo();location.reload()})}
+};
+gate();
+})();
+</script>
+</body>
+</html>

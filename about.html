@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Guidelines & Privacy · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="about">
+<div id="siteHeader"></div>
+<main><div class="wrap pagehead"><div class="eyebrow">Guidelines, privacy and data</div><h1>How Petition.africa works.</h1></div>
+<section style="padding-top:0"><div class="wrap"><div class="article-body" style="margin-top:0">
+<h3>Community guidelines</h3>
+<p>Petitions must ask a person or institution with real power to make a specific change. We remove petitions that incite violence or hatred, target or expose private individuals, share someone's phone number or address, or make claims that are clearly false.</p>
+<p>New petitions are checked automatically. Anything that looks risky is held for review, and petitions reported by several people are hidden until our team checks them.</p>
+<h3>Signing</h3>
+<p>You sign in with your phone number and a one-time code. Each phone number can sign a petition once. Your number is never shown. You choose whether your first name and area appear on the petition.</p>
+<h3>Leaders</h3>
+<p>Heads of state for all 54 countries, and governors, premiers and regional ministers for Nigeria, Kenya, Ghana and South Africa, were checked on <span id="ver"></span>. Other offices show their title until a name is verified. Anyone can suggest a correction, and we check each one before publishing it.</p>
+<h3>Maps</h3>
+<div class="table-wrap" style="margin-bottom:20px"><table><thead><tr><th>Coverage</th><th class="num">Countries</th><th class="num">Areas</th></tr></thead><tbody id="cov"></tbody></table></div>
+<p>Boundaries come from geoBoundaries (William &amp; Mary geoLab) under open licences that require attribution. They are shown for navigation only and imply no position on any disputed border.</p>
+<h3>Prototype status</h3>
+<p>This version stores data in your browser, sends no real SMS codes, and includes demonstration petitions and signature counts. A live launch needs a server database, an SMS provider, rate limiting, a moderation team and data protection registration in each country of operation.</p>
+</div></div></section></main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script data-page-script>
+(function(){CG.$('#ver').textContent=CG.L.verified;const G=Object.values(CG.GEO);const two=G.filter(g=>g.adm2.length);
+CG.$('#cov').innerHTML=`<tr><td>Countries with two levels (state/region and local area)</td><td class="num">${two.length}</td><td class="num">${CG.fmt(two.reduce((s,g)=>s+g.adm1.length+g.adm2.length,0))}</td></tr><tr><td>Countries with one level</td><td class="num">${G.length-two.length}</td><td class="num">${CG.fmt(G.filter(g=>!g.adm2.length).reduce((s,g)=>s+g.adm1.length,0))}</td></tr>`})();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Africa Map · Petition.africa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Petition.africa: start and sign petitions for change across Africa.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="map">
+<div id="siteHeader"></div>
+<main>
+<div class="wrap pagehead" style="padding-bottom:18px"><div class="eyebrow">Map</div><h1>Who's in charge where you live.</h1><p>Hover any country, state or local area to see its leader. Click to drill down from Africa to your local government.</p></div>
+<section style="padding-top:0"><div class="wrap map-layout">
+  <div class="map-side"><div class="box">
+    <div class="crumbs" id="cr"></div>
+    <input class="searchbox" id="q" type="search" placeholder="Search any country, state or local area" aria-label="Search places" autocomplete="off" style="margin-top:12px">
+    <div class="arealist" id="list" style="margin-top:12px"></div><p class="smallnote" id="ln"></p>
+  </div></div>
+  <div style="display:grid;gap:12px;min-width:0"><div id="map"></div><div class="box" id="det"></div></div>
+</div></section>
+</main>
+
+
+<div id="siteFooter"></div>
+<script src="assets/geo/index.js"></script>
+<script src="assets/leaders.js"></script>
+<script src="assets/writer.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/geo/africa.js"></script>
+<script src="assets/map.js"></script>
+<script data-page-script>
+(function(){
+const P=CG.params();const sig=CG.sigIndex();const esc=CG.esc;
+const map=new CGMap(CG.$('#map'),{values:()=>({data:sig,label:'Signatures',fmt:x=>CG.short(Math.round(x))}),onChange:side});
+const ALL=[];for(const cc in CG.GEO){const g=CG.GEO[cc];ALL.push({id:cc,n:g.name,sub:'Country'});g.adm1.forEach(a=>ALL.push({id:a[0],n:a[1],sub:g.l1+', '+g.name,cc}));g.adm2.forEach(a=>ALL.push({id:a[0],n:a[1],sub:g.l2+', '+CG.areaName(a[2])+', '+g.name,cc}))}
+function side(s,m){const g=m.geo;
+  CG.$('#cr').innerHTML=`<button class="crumb ${!s.cc?'current':''}" data-go="AF">Africa</button>`+(s.cc?`<button class="crumb ${!s.adm1?'current':''}" data-go="${s.cc}">${esc(g.name)}</button>`:'')+(s.adm1?`<button class="crumb ${!s.adm2?'current':''}" data-go="${s.adm1}">${esc(m.byId[s.adm1].n)}</button>`:'')+(s.adm2?`<button class="crumb current">${esc(m.byId[s.adm2].n)}</button>`:'');
+  list();detail(s,m)}
+function list(){const s=map.st,q=CG.$('#q').value.trim().toLowerCase();let h='';
+  if(q.length>1){const r=ALL.filter(a=>a.n.toLowerCase().includes(q)).sort((a,b)=>(a.n.toLowerCase().startsWith(q)?0:1)-(b.n.toLowerCase().startsWith(q)?0:1)).slice(0,60);
+    h=r.map(a=>`<button data-go="${a.id}"><span>${esc(a.n)}</span><span>${esc(a.sub)}</span></button>`).join('')||'<div class="empty">No place matches.</div>';CG.$('#ln').textContent=r.length+' matches'}
+  else{const items=!s.cc?window.CG_AFRICA.map(c=>({id:c.id,n:c.n})).sort((a,b)=>a.n.localeCompare(b.n)):s.adm1?map.geo.adm2.filter(a=>a.p===s.adm1):map.geo.adm1;
+    h=items.map(a=>`<button data-go="${a.id}" class="${a.id===(s.adm2||s.sel)?'sel':''}"><span>${esc(a.n)}</span><span>${CG.short(sig[a.id]||0)}</span></button>`).join('');
+    CG.$('#ln').textContent=items.length+' '+(!s.cc?'countries':s.adm1?map.geo.l2p.toLowerCase():map.geo.l1p.toLowerCase())+' · signatures shown'}
+  CG.$('#list').innerHTML=h;const sel=CG.$('#list .sel');if(sel)sel.scrollIntoView({block:'nearest'})}
+function detail(s,m){const id=s.adm2||s.sel||s.adm1||s.cc;const el=CG.$('#det');
+  if(!id){el.innerHTML=`<div class="eyebrow">Africa</div><h3 style="font-size:28px;margin:6px 0">54 countries</h3><p class="smallnote">Leaders verified ${esc(CG.L.verified)}. Heads of state for every country, plus governors, premiers and regional ministers for Nigeria, Kenya, Ghana and South Africa. More are added as they are verified.</p>`;return}
+  const L=CG.leader(id);const isC=!!CG.GEO[id];const a=CG.area(id);const name=isC?CG.COUNTRIES[id]:a.name;const lvl=isC?'Country':a.level===1?m.geo.l1:m.geo.l2;
+  const pets=CG.petsIn(id).sort((x,y)=>CG.attention(y)-CG.attention(x)).slice(0,4);
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:start"><div><div class="eyebrow">${esc(lvl)}${a&&a.level===2?' · '+esc(CG.areaName(a.parent)):''}</div><h3 style="font-size:30px;margin:6px 0 12px">${esc(name)}</h3></div>
+    <div class="actions"><button class="btn small" id="st">Start a petition here</button>${map.level()?'<button class="btn small outline" id="up">↑ Up</button>':''}</div></div>
+  <div class="grid2 even" style="margin-top:0"><div class="leader">${L&&L.title?`<small>${esc(L.office||L.title)}</small><strong>${esc(L.name||'Not yet listed')}</strong>${L.gov?`<small style="margin-top:8px">${esc(L.gov.title)}</small><strong>${esc(L.gov.name)}</strong>`:''}<span class="src">${L.name?esc(L.src):'We have not verified who holds this office yet.'}</span><button class="linkbtn" id="fix" style="justify-self:start;margin-top:6px">${L.name?'Suggest a correction':'Tell us who holds this office'}</button>`:'<small>No single office leads this area</small>'}</div>
+  <div class="kv" style="margin:0;align-content:start"><span>Signatures from here</span><span>${CG.fmt(sig[id]||0)}</span><span>Petitions about here</span><span>${CG.petsIn(id).length}</span>${isC?`<span>${esc(CG.GEO[id].l1p)}</span><span>${CG.GEO[id].adm1.length}</span>${CG.GEO[id].l2?`<span>${esc(CG.GEO[id].l2p)}</span><span>${CG.fmt(CG.GEO[id].adm2.length)}</span>`:''}`:''}</div></div>
+  ${pets.length?`<div class="eyebrow" style="margin:18px 0 8px">Petitions here</div><div class="pgrid">${pets.map(p=>CG.card(p)).join('')}</div>`:''}`;
+  CG.$('#st').onclick=()=>CG.go('start.html',{cc:s.cc,adm1:a?(a.level===1?id:a.parent):'',adm2:a&&a.level===2?id:''});
+  const up=CG.$('#up');if(up)up.onclick=()=>map.up();
+  const fx=CG.$('#fix');if(fx)fx.onclick=()=>{const mm=CG.modal(`<div class="modal-head"><div><div class="eyebrow">${esc(L.office||L.title)}</div><h2>Who holds this office?</h2></div><button class="close" data-close>Close</button></div><form id="lf"><div class="field"><label for="lfN">Name</label><input id="lfN" required maxlength="80"></div><div class="field"><label for="lfS">Source (link or where you saw it)</label><input id="lfS" required maxlength="200"></div><button class="btn" type="submit">Send for review</button><p class="smallnote">Our team checks every suggestion before it appears.</p></form>`);
+    CG.$('#lf',mm).onsubmit=e=>{e.preventDefault();const D=CG.db();D.reports.push({id:CG.uid('rp'),type:'leader',area:id,name:CG.$('#lfN',mm).value.trim(),src:CG.$('#lfS',mm).value.trim(),at:Date.now(),status:'open'});CG.save();CG.closeModal();CG.toast('Thanks. We will review it.')}}}
+const nav=e=>{const b=e.target.closest('[data-go]');if(!b)return;const id=b.dataset.go;CG.$('#q').value='';
+  if(id==='AF')map.open(null);else if(CG.GEO[id])map.open(id);else{const a=CG.area(id);if(a.level===1){if(map.st.cc===a.cc&&!map.st.adm1&&!CG.GEO[a.cc].l2)map.click(id);else map.open(a.cc,id)}else map.open(a.cc,a.parent,id)}};
+CG.$('#cr').onclick=nav;CG.$('#list').onclick=nav;CG.$('#q').oninput=list;
+map.open(P.cc||null,P.adm1,P.adm2,true);try{sessionStorage.removeItem('pa_nav')}catch(e){}
+})();
+</script>
+</body>
+</html>
