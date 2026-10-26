@@ -1,0 +1,29 @@
+/* Verified leaders. Heads of state checked 26 Oct 2026. Sub-national leaders by name; source + date per set.
+   Admin edits override these (stored separately). */
+window.CG_LEADERS={
+verified:'26 Oct 2026',
+heads:{
+DZ:['President','Abdelmadjid Tebboune'],AO:['President','João Lourenço'],BJ:['President','Romuald Wadagni'],BW:['President','Duma Boko'],
+BF:['President of the Transition','Capt. Ibrahim Traoré'],BI:['President','Évariste Ndayishimiye'],CV:['President','José Maria Neves','Prime Minister','Francisco Carvalho'],
+CM:['President','Paul Biya'],CF:['President','Faustin-Archange Touadéra'],TD:['President','Mahamat Idriss Déby'],KM:['President','Azali Assoumani'],
+CG:['President','Denis Sassou Nguesso'],CD:['President','Félix Tshisekedi'],CI:['President','Alassane Ouattara'],DJ:['President','Ismaïl Omar Guelleh'],
+EG:['President','Abdel Fattah el-Sisi'],GQ:['President','Teodoro Obiang Nguema Mbasogo'],ER:['President','Isaias Afwerki'],
+SZ:['King','Mswati III','Prime Minister','Russell Mmiso Dlamini'],ET:['President','Taye Atske Selassie','Prime Minister','Abiy Ahmed'],
+GA:['President','Brice Clotaire Oligui Nguema'],GM:['President','Adama Barrow'],GH:['President','John Dramani Mahama'],GN:['President','Mamadi Doumbouya'],
+GW:['Transitional President','Gen. Horta N\'Tam'],KE:['President','William Ruto'],LS:['King','Letsie III','Prime Minister','Sam Matekane'],
+LR:['President','Joseph Boakai'],LY:['Presidential Council Chair','Mohamed al-Menfi','Prime Minister (GNU)','Abdul Hamid Dbeibah'],
+MG:['President','Col. Michael Randrianirina'],MW:['President','Peter Mutharika'],ML:['President of the Transition','Gen. Assimi Goïta'],
+MR:['President','Mohamed Ould Ghazouani'],MU:['President','Dharam Gokhool','Prime Minister','Navin Ramgoolam'],
+MA:['King','Mohammed VI','Head of Government','Fatima Ezzahra El Mansouri'],MZ:['President','Daniel Chapo'],NA:['President','Netumbo Nandi-Ndaitwah'],
+NE:['President of the Transition','Gen. Abdourahamane Tchiani'],NG:['President','Bola Ahmed Tinubu'],RW:['President','Paul Kagame'],
+ST:['President','Carlos Vila Nova'],SN:['President','Bassirou Diomaye Faye'],SC:['President','Patrick Herminie'],SL:['President','Julius Maada Bio'],
+SO:['President','Hassan Sheikh Mohamud'],ZA:['President','Cyril Ramaphosa'],SS:['President','Salva Kiir Mayardit'],
+SD:['Chairman, Transitional Sovereignty Council','Gen. Abdel Fattah al-Burhan'],TZ:['President','Samia Suluhu Hassan'],
+TG:['President of the Council of Ministers','Faure Gnassingbé'],TN:['President','Kais Saied'],UG:['President','Yoweri Museveni'],
+ZM:['President','Hakainde Hichilema'],ZW:['President','Emmerson Mnangagwa']},
+sub:{
+NG:{src:'State governments; Ekiti (Jun 2026) and Osun (Aug 2026) results',map:{'Abia':'Alex Otti','Adamawa':'Ahmadu Umaru Fintiri','Akwa Ibom':'Umo Eno','Anambra':'Charles Soludo','Bauchi':'Bala Mohammed','Bayelsa':'Douye Diri','Benue':'Hyacinth Alia','Borno':'Babagana Zulum','Cross River':'Bassey Otu','Delta':'Sheriff Oborevwori','Ebonyi':'Francis Nwifuru','Edo':'Monday Okpebholo','Ekiti':'Biodun Oyebanji','Enugu':'Peter Mbah','Gombe':'Muhammadu Inuwa Yahaya','Imo':'Hope Uzodimma','Jigawa':'Umar Namadi','Kaduna':'Uba Sani','Kano':'Abba Kabir Yusuf','Katsina':'Dikko Umaru Radda','Kebbi':'Nasir Idris','Kogi':'Ahmed Usman Ododo','Kwara':'AbdulRahman AbdulRazaq','Lagos':'Babajide Sanwo-Olu','Nasarawa':'Abdullahi Sule','Niger':'Mohammed Umaru Bago','Ogun':'Dapo Abiodun','Ondo':'Lucky Aiyedatiwa','Osun':'Ademola Adeleke','Oyo':'Seyi Makinde','Plateau':'Caleb Mutfwang','Rivers':'Siminalayi Fubara','Sokoto':'Ahmad Aliyu','Taraba':'Agbu Kefas','Yobe':'Mai Mala Buni','Zamfara':'Dauda Lawal','Federal Capital Territory':['FCT Minister','Nyesom Wike']}},
+KE:{src:'County governments, Jul 2026',map:{'Mombasa':'Abdulswamad Shariff Nassir','Kwale':'Fatuma Achani','Kilifi':'Gideon Mung\'aro','Tana River':'Dhadho Godhana','Lamu':'Issa Timamy','Taita Taveta':'Andrew Mwadime','Garissa':'Nathif Jama','Wajir':'Ahmed Abdullahi','Mandera':'Mohamed Adan Khalif','Marsabit':'Mohamud Ali','Isiolo':'Abdi Guyo','Meru':'Isaac Mutuma','Tharaka-Nithi':'Muthomi Njuki','Embu':'Cecily Mbarire','Kitui':'Julius Malombe','Machakos':'Wavinya Ndeti','Makueni':'Mutula Kilonzo Jnr','Nyandarua':'Moses Kiarie Badilisha','Nyeri':'Mutahi Kahiga','Kirinyaga':'Anne Waiguru','Murang\'a':'Irungu Kang\'ata','Kiambu':'Kimani Wamatangi','Turkana':'Jeremiah Lomorukai','West Pokot':'Simon Kachapin','Samburu':'Lati Lelelit','Trans Nzoia':'George Natembeya','Uasin Gishu':'Jonathan Bii','Elgeyo-Marakwet':'Wisley Rotich','Nandi':'Stephen Sang','Baringo':'Benjamin Cheboi','Laikipia':'Joshua Irungu','Nakuru':'Susan Kihika','Narok':'Patrick Ole Ntutu','Kajiado':'Joseph Ole Lenku','Kericho':'Erick Mutai','Bomet':'Hillary Barchok','Kakamega':'Fernandes Barasa','Vihiga':'Wilber Ottichilo','Bungoma':'Kenneth Lusaka','Busia':'Paul Otuoma','Siaya':'James Orengo','Kisumu':'Anyang\' Nyong\'o','Homa Bay':'Gladys Wanga','Migori':'Ochilo Ayacko','Kisii':'Simba Arati','Nyamira':'Amos Nyaribo','Nairobi':'Johnson Sakaja'}},
+GH:{src:'Regional ministers appointed Jan 2025',map:{'Upper West':'Charles Lwanga Puozuing','Bono':'Joseph Addae Akwaboa','Bono East':'Francis Owusu Antwi','Western North':'Wilbert Petty Brentum','Central':'Ekow Panyin Okyere Eduamoah','Western':'Joseph Nelson','Northern':'Ali Adolf John','Oti':'John Kwadwo Gyapong','Volta':'James Gunu','Eastern':'Rita Akosua Adjei Awatey','North East':'Ibrahim Tia','Ashanti':'Frank Amoakohene','Upper East':'Donatus Akamugri Atanga','Ahafo':'Charity Gardiner','Savannah':'Salisu Be-Awuribe','Greater Accra':'Linda Ocloo'}},
+ZA:{src:'Provincial premiers since 2024 elections',map:{'Eastern Cape':'Oscar Mabuyane','Free State':'Maqueen Letsoha-Mathae','Gauteng':'Panyaza Lesufi','KwaZulu-Natal':'Thami Ntuli','Limpopo':'Phophi Ramathuba','Mpumalanga':'Mandla Ndlovu','North West':'Lazarus Mokgosi','Northern Cape':'Zamani Saul','Western Cape':'Alan Winde'}}
+}};
