@@ -236,9 +236,23 @@ CG.renderChrome=()=>{const page=document.body.dataset.page;const u=CG.user();con
   if(h){h.outerHTML=`<div class="topline"></div><header class="site"><div class="wrap nav"><a href="index.html" class="brand">PETITION<em>.</em>AFRICA</a>
   <nav class="navlinks" id="navlinks" aria-label="Main">${NAV.map(([href,label,key])=>`<a href="${href}" class="${key===page?'current':''}">${label}</a>`).join('')}<a href="start.html" class="btn small" style="color:var(--paper);border-bottom:0">Start a petition</a></nav>
   <div class="navright">${u?`<a class="btn outline small" id="signInBtn" href="account.html">${esc(u.name.split(' ')[0])}</a>`:'<button class="btn outline small" id="signInBtn">Sign in</button>'}
-  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navlinks">Menu</button></div></div></header>`;
-    if(!u)CG.$('#signInBtn').onclick=()=>CG.openSignIn();
-    CG.$('#menuBtn').onclick=e=>{const n=CG.$('#navlinks');n.classList.toggle('open');e.currentTarget.setAttribute('aria-expanded',n.classList.contains('open'))}}
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="drawer" aria-label="Open menu"><span class="burger"><i></i><i></i><i></i></span></button></div></div></header>
+  <div class="drawer-bg" id="drawerBg"></div>
+  <aside class="drawer" id="drawer" aria-label="Menu" aria-hidden="true">
+    <div class="drawer-top"><a href="index.html" class="brand">PETITION<em>.</em>AFRICA</a><button class="drawer-x" id="drawerX" aria-label="Close menu">✕</button></div>
+    <nav class="drawer-nav">${[['index.html','Home','home'],...NAV].map(([href,label,key],i)=>`<a href="${href}" class="${key===page?'current':''}" style="--i:${i}"><span>${String(i+1).padStart(2,'0')}</span>${label}</a>`).join('')}</nav>
+    <div class="drawer-foot" style="--i:6"><a href="start.html" class="btn accent">Start a petition ↗</a>${u?`<a href="account.html" class="drawer-user">Signed in as <b>${esc(u.name)}</b></a>`:'<button class="btn st-ghost" id="drawerSignIn">Sign in</button>'}<p>Petitions for all 54 African countries.</p></div>
+  </aside>`;
+    if(!u){CG.$('#signInBtn').onclick=()=>CG.openSignIn();CG.$('#drawerSignIn').onclick=()=>{close();setTimeout(()=>CG.openSignIn(),300)}}
+    const btn=CG.$('#menuBtn'),dr=CG.$('#drawer'),bg=CG.$('#drawerBg');
+    const open=()=>{document.body.classList.add('drawer-open');dr.setAttribute('aria-hidden','false');btn.setAttribute('aria-expanded','true');setTimeout(()=>CG.$('#drawerX').focus(),50)};
+    const close=()=>{if(!document.body.classList.contains('drawer-open'))return;document.body.classList.remove('drawer-open');dr.setAttribute('aria-hidden','true');btn.setAttribute('aria-expanded','false');btn.focus()};
+    btn.onclick=open;CG.$('#drawerX').onclick=close;bg.onclick=close;
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+    dr.querySelectorAll('.drawer-nav a').forEach(a=>a.addEventListener('click',()=>close()));
+    // swipe left to close
+    let sx=null;dr.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});dr.addEventListener('touchmove',e=>{if(sx==null)return;const dx=Math.min(0,e.touches[0].clientX-sx);dr.style.transform=`translateX(${dx}px)`;dr.style.transition='none'},{passive:true});
+    dr.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;dr.style.transform='';dr.style.transition='';sx=null;if(dx<-70)close()})}
   const f=CG.$('#siteFooter');
   if(f)f.outerHTML=`<footer class="site"><div class="wrap footer-row"><div><a href="index.html" class="brand">PETITION<em>.</em>AFRICA</a><p>Start, sign and win petitions in all 54 African countries. Boundaries from geoBoundaries (CC BY). Leader names verified ${esc(CG.L.verified)}. Signature counts on this prototype include demonstration data.</p></div>
   <div class="footlinks"><a href="start.html">Start a petition</a><a href="browse.html">Browse</a><a href="map.html">Map</a><a href="about.html">Guidelines &amp; privacy</a><a href="admin.html">Admin</a></div></div></footer>`};
